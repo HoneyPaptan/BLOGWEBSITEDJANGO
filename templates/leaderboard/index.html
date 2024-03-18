@@ -1,0 +1,38 @@
+{% extends "_base.html" %}
+
+{% block content %}
+<div>
+    <h1 class="font-rubik font-bold text-4xl mt-5 tracking-tighter">Check out all the trending posts.</h1>
+</div>
+<div class="flex flex-wrap gap-10 mt-10 lg:justify-center sm:justify-center justify-center">
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10">
+        {% for blog in blogs %}
+  
+        <!-- card  -->
+  
+        <a href="{% url 'blog_view' blog.id %}">
+            <div class="bg-gray-100 rounded-md p-2 flex flex-col justify-between" > <!-- Adjust width as needed -->
+                <div class="w-full h-[100px] mb-2">
+                    {% if not blog.blog_main_image %}
+                        <img class="w-full h-full rounded-lg object-cover" src="{{ blog.image_url }}" alt="avatar">
+                    {% else %}
+                        <img class="w-full h-full rounded-lg object-cover" src="{{ blog.blog_main_image.url }}" alt="avatar">
+                    {% endif %}
+                </div>
+                <div class="flex flex-col gap-2">
+                    <h1 class="font-rubik text-xl font-medium tracking-tighter truncate">{{ blog.title|truncatechars:40 }}</h1>
+                    <p class="font-rubik text-sm text-gray-500">{{ blog.timestamp }}</p>
+                </div>
+                <div class="flex items-center justify-between">
+                    
+                    
+                    <small class="font-rubik font-medium">{{ blog.read_time }} min read</small>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+        <!-- card ends  -->
+    </div>
+</div>
+
+{% endblock content %}

@@ -1,0 +1,123 @@
+{% extends "_base.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Header Section -->
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h1 class="mb-2 font-rubik font-bold text-3xl tracking-tighter">{{ blog.title }}</h1>
+            <div class="flex items-center">
+                {% if profile_image %}
+                    <img src="{{ profile_image }}" class="w-10 h-10 rounded-full mr-2" alt="Profile Image">
+                {% else %}
+                    
+                {% endif %}
+                <p class="text-gray-600 font-rubik tracking-tighter">
+                    By <a href="/profile/{{ blog.author.username }}/" class="font-rubik text-[#266bd9]">{{ blog.author.username }}</a> | {{ blog.timestamp }}
+                </p>
+                 <!-- Save button -->
+{% if user.is_authenticated %}
+{% if user != blog.author %}
+    <form id="save-unsave-form" action="{% url 'save_unsave_blog' blog.pk %}" method="POST" data-saved="{{ is_saved }}">
+        {% csrf_token %}
+        <!-- Outlined SVG icon (initially hidden if already saved) -->
+        <svg id="save-unsave-icon-outlined" class="w-6 h-6 text-gray-800 dark:text-white cursor-pointer {% if is_saved %} hidden {% endif %}" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m17 21-5-4-5 4V3.889a.92.92 0 0 1 .244-.629.808.808 0 0 1 .59-.26h8.333a.81.81 0 0 1 .589.26.92.92 0 0 1 .244.63V21Z"/>
+        </svg>
+        <!-- Filled SVG icon (initially hidden if not saved) -->
+        <svg id="save-unsave-icon-filled" class="w-6 h-6 text-gray-800 dark:text-white cursor-pointer {% if not is_saved %} hidden {% endif %}" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M7.833 2c-.507 0-.98.216-1.318.576A1.92 1.92 0 0 0 6 3.89V21a1 1 0 0 0 1.625.78L12 18.28l4.375 3.5A1 1 0 0 0 18 21V3.889c0-.481-.178-.954-.515-1.313A1.808 1.808 0 0 0 16.167 2H7.833Z"/>
+        </svg>
+    </form>
+{% endif %}
+{% endif %}
+             
+            </div>
+        </div>
+        <!-- Follow button -->
+        <form method="POST" action="{% url 'blog_view' pk=blog.pk %}">
+            {% csrf_token %}
+            {% if user.is_authenticated and user != blog.author %}
+                {% if is_following %}
+                    <button type="submit" name="action" value="unfollow">Unfollow</button>
+                {% else %}
+                    <button type="submit" name="action" value="follow">Follow</button>
+                {% endif %}
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Blog Main Image -->
+    <div class="w-full mb-8">
+        {% if not blog.blog_main_image %}
+            <img class="w-full h-full rounded-lg object-cover" src="{{ blog.image_url }}" alt="Avatar">
+        {% else %}
+            <img class="w-full h-full rounded-lg object-cover" src="{{ blog.blog_main_image.url }}" alt="Avatar">
+        {% endif %}
+    </div>
+
+    <!-- Content Section -->
+    <div class="prose max-w-none tracking-tighter font-rubik text-lg">
+        {{ blog.content | safe }}
+    </div>
+
+    <!-- Comments Section -->
+    <div class="mt-8">
+        <h2 class="font-rubik font-bold text-2xl mb-4">Comments</h2>
+        <form method="post" id="comment-form" action="{% url 'save_commet' pk=blog.pk %}">
+            {% csrf_token %}
+            <input type="text" name="content" required>
+            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md mt-2 hover:bg-blue-600">Add Comment</button>
+        </form>
+        <div id="comment-list" class="mt-4">
+            <!-- Comments will be displayed here -->
+            {% for comment in blog.comment_set.all %}
+            <div class="bg-gray-100 rounded-md p-2 mb-2">
+                <p class="font-rubik text-lg">{{ comment.content }}</p>
+                <p class="font-rubik text-sm text-gray-500">{{ comment.timestamp }}</p>
+                <small>By: {{comment.user}}</small>
+            </div>
+        {% empty %}
+            <p>No comments yet.</p>
+        {% endfor %}
+        </div>
+    </div>
+    
+    
+    
+</div>
+{% endblock %}
+{% block js %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const saveUnsaveForm = document.getElementById('save-unsave-form');
+        const saveUnsaveIconOutlined = document.getElementById('save-unsave-icon-outlined');
+        const saveUnsaveIconFilled = document.getElementById('save-unsave-icon-filled');
+
+        // Add click event listener to the form
+        saveUnsaveForm.addEventListener('click', function(event) {
+            event.preventDefault();
+
+            // Toggle visibility of SVG icons
+            saveUnsaveIconOutlined.classList.toggle('hidden');
+            saveUnsaveIconFilled.classList.toggle('hidden');
+
+            // Submit the form via AJAX
+            fetch(saveUnsaveForm.action, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                credentials: 'same-origin',
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Update the data-saved attribute based on server response
+                saveUnsaveForm.dataset.saved = data.is_saved;
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    });
+</script>
+{% endblock js %}

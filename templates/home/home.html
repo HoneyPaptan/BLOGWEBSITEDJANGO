@@ -1,0 +1,54 @@
+{% extends "_base.html" %}
+
+{% block content %}
+<div class="mt-14">
+    <div class="flex flex-col items-center justify-center">
+        <h1 class="font-rubik font-bold text-4xl tracking-tighter lg:text-5xl text-center sm:text-4xl">Providing you the best
+            <span class="text-[#266bd9]">knowledge</span> and saving your <span class="text-[#266bd9]">time</span> as
+            well.
+        </h1>
+        <p class="font-rubik font-normal m-3 text-sm text-muted-foreground text-gray-800 text-center mt-3 lg:w-1/2 sm:text-base sm:px-4 md:px-6">Micro
+            will help you stay updated to the latest trend in popular domains and also you don't have to spend time
+            searching for the trending blogs. We only show you those blogs that are helpful for you and will be worth
+            of your time.
+        </p>
+        <div class="flex gap-3 items-center justify-center mt-3">
+            <a href="/write/"
+                class="bg-[#266bd9] p-3 px-10 text-white rounded-full border-none font-rubik text-sm font-medium">Write</a>
+            <a href="/leaderboard/"
+                class="p-3 px-5 bg-transparent border-none underline font-rubik text-sm font-medium">Leaderboard</a>
+
+        </div>
+    </div>
+    <div class="flex flex-wrap gap-10 mt-10 lg:justify-center sm:justify-center justify-center">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10">
+            {% for blog in latest_blogs %}
+
+            <!-- card  -->
+
+            <a href="{% url 'blog_view' blog.id %}">
+                <div class="bg-gray-100 rounded-md p-2 flex flex-col justify-between"> <!-- Adjust width as needed -->
+                    <div class="w-full h-[100px] mb-2">
+                        {% if not blog.blog_main_image %}
+                        <img class="w-full h-full rounded-lg object-cover" src="{{ blog.image_url }}" alt="avatar">
+                        {% else %}
+                        <img class="w-full h-full rounded-lg object-cover"
+                            src="{{ blog.blog_main_image.url }}" alt="avatar">
+                        {% endif %}
+
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <h1 class="font-rubik text-xl font-medium tracking-tighter truncate">{{ blog.title|truncatechars:40 }}</h1>
+                        <p class="font-rubik text-sm text-gray-500 sm:text-xs md:text-sm">{{ blog.timestamp }}</p>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <small class="font-rubik font-medium">{{ blog.read_time }} min read</small>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+            <!-- card ends  -->
+        </div>
+    </div>
+</div>
+{% endblock content %}

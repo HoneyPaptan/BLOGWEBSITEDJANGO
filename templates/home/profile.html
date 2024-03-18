@@ -1,0 +1,216 @@
+{% extends "_base.html" %}
+
+{% block content %}
+<!-- User name and followers -->
+<div class="flex items-center justify-center gap-3 mt-14">
+    <h1 class="font-rubik font-bold">{{ user.first_name|default:user.username }}</h1>
+    {% if is_own_profile %}
+        <!-- Display follower count only if it's the user's own profile -->
+        <span>followers</span>
+        <span>{{ num_followers }}</span>
+    {% else %}
+      <!-- Follow/Unfollow form -->
+{% if user != request.user %}
+<form id="follow-form" method="POST" action="{% url 'profile' username=user.username %}">
+    {% csrf_token %}
+    {% if is_following %}
+        <button id="follow-button" type="submit" name="action" value="unfollow" class="bg-red-500 p-3 px-10 text-white rounded-full border-none font-rubik text-sm font-medium">Unfollow</button>
+    {% else %}
+        <button id="follow-button" type="submit" name="action" value="follow" class="bg-[#266bd9] p-3 px-10 text-white rounded-full border-none font-rubik text-sm font-medium">Follow</button>
+    {% endif %}
+</form>
+{% endif %}
+        <!-- Display follower count -->
+        <div>
+            <h1>Followers</h1>
+            <h1 id="follower-count">{{ num_followers }}</h1>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Profile picture -->
+<div class="w-full flex items-center justify-center mb-2">
+    {% if profile_pic %}
+        <img id="profile-image" class="object-cover w-32 h-32 rounded-full" src="{{ profile_pic }}" alt="Large avatar">
+    {% else %}
+        <img id="profile-image" class="object-cover w-32 h-32 rounded-full" src="{{ profile.profile_picture.url }}" alt="Large avatar">
+    {% endif %}
+    <!-- Modal toggle -->
+    {% if is_own_profile %}
+        {% if not is_google_user %}
+            <!-- Show the button for changing image -->
+            <button data-modal-target="authentication-modal" data-modal-toggle="authentication-modal" class="block text-whitefocus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" type="button">
+                <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                    <path fill-rule="evenodd" d="M13 10a1 1 0 0 1 1-1h.01a1 1 0 1 1 0 2H14a1 1 0 0 1-1-1Z" clip-rule="evenodd"/>
+                    <path fill-rule="evenodd" d="M2 6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v12c0 .556-.227 1.06-.593 1.422A.999.999 0 0 1 20.5 20H4a2.002 2.002 0 0 1-2-2V6Zm6.892 12 3.833-5.356-3.99-4.322a1 1 0 0 0-1.549.097L4 12.879V6h16v9.95l-3.257-3.619a1 1 0 0 0-1.557.088L11.2 18H8.892Z" clip-rule="evenodd"/>
+                </svg>
+            </button>
+        {% endif %}
+    {% endif %}
+    <!-- Main modal -->
+  <div id="authentication-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+    <div class="relative p-4 w-full max-w-md max-h-full">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+            <!-- Modal header -->
+            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+                    Select image
+                   </h3>
+                <button type="button" class="end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="authentication-modal">
+                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                    </svg>
+                    <span class="sr-only">Close modal</span>
+                </button>
+            </div>
+            <!-- Modal body -->
+            <div class="p-4 md:p-5">
+                <form class="space-y-4" method="post" action="{% url 'change_image' request.user %}">
+                  {% csrf_token %}
+                   
+                    <div>
+                        <label for="image" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Select Image</label>
+                        <input type="file" name="image" id="image" placeholder="select image"  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" required />
+                    </div>
+                 
+                    <button type="submit" class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Change Image</button>
+                  
+                </form>
+            </div>
+        </div>
+    </div>
+</div> 
+</div>
+
+
+<!-- User blogs and saved blogs -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+    <!-- User blogs -->
+    <div>
+        <h1 class="font-rubik text-xl font-medium mb-2">User Blogs</h1>
+        <!-- Display user blogs -->
+        {% if user_blog %}
+            {% for blog in user_blog %}
+            <a href="{% url 'blog_view' blog.id %}">
+                <!-- Card for user blog -->
+                <div class="bg-gray-100 rounded-md p-2 flex flex-col justify-between">
+                    <!-- Blog image -->
+                    <div class="w-full h-[100px] mb-2">
+                        {% if not blog.blog_main_image %}
+                            <img class="w-full h-full rounded-lg object-cover" src="{{ blog.image_url }}" alt="avatar">
+                        {% else %}
+                            <img class="w-full h-full rounded-lg object-cover" src="{{ blog.blog_main_image.url }}" alt="avatar">
+                        {% endif %}
+                    </div>
+                    <!-- Blog title and timestamp -->
+                    <div class="flex flex-col gap-2">
+                        <h1 class="font-rubik text-xl font-medium tracking-tighter truncate">{{ blog.title|truncatechars:40 }}</h1>
+                        <p class="font-rubik text-sm text-gray-500">{{ blog.timestamp }}</p>
+                    </div>
+                    <!-- Button and read time -->
+                    <div class="flex items-center justify-between">
+                       
+                        <small class="font-rubik font-medium">{{ blog.read_time }} min read</small>
+                    </div>
+                    <!-- Add delete button for posts created by the logged-in user -->
+        {% if request.user == blog.author %}
+        <form action="{% url 'delete_blog' blog.id %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600">Delete</button>
+        </form>
+        {% endif %}
+        </div>
+            </a>
+            {% endfor %}
+        {% else %}
+            <!-- Display message if no user blogs -->
+            <p class="font-rubik text-gray-500">No blogs yet.</p>
+        {% endif %}
+    </div>
+    <!-- Saved blogs -->
+
+    {% if is_own_profile %}
+<div>
+    <h1 class="font-rubik text-xl font-medium mb-2">Saved Blogs</h1>
+    <!-- Display saved blogs -->
+    {% if saved_blogs %}
+        {% for saved_blog in saved_blogs %}
+            <!-- Card for saved blog -->
+            <a href="{% url 'blog_view' saved_blog.id %}">
+            <div class="bg-gray-100 rounded-md p-2 flex flex-col justify-between">
+                <!-- Blog image -->
+                <div class="w-full h-[100px] mb-2">
+                    {% if not saved_blog.blog_main_image %}
+                        <img class="w-full h-full rounded-lg object-cover" src="{{ saved_blog.image_url }}" alt="avatar">
+                    {% else %}
+                        <img class="w-full h-full rounded-lg object-cover" src="{{ saved_blog.blog_main_image.url }}" alt="avatar">
+                    {% endif %}
+                </div>
+                <!-- Blog title and timestamp -->
+                <div class="flex flex-col gap-2">
+                    <h1 class="font-rubik text-xl font-medium tracking-tighter truncate">{{ saved_blog.title|truncatechars:40 }}</h1>
+                    <p class="font-rubik text-sm text-gray-500">{{ saved_blog.timestamp }}</p>
+                </div>
+                <!-- Button and read time -->
+                <div class="flex items-center justify-between">
+                   
+                    <small class="font-rubik font-medium">{{ saved_blog.read_time }} min read</small>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    {% else %}
+        <!-- Display message if no saved blogs -->
+        <p class="font-rubik text-gray-500">No saved blogs.</p>
+    {% endif %}
+
+
+</div>
+{% endif %}
+
+{% endblock content %}
+
+{% block js %}
+<!-- <script>
+    document.addEventListener("DOMContentLoaded", function() {
+    const followForm = document.getElementById('follow-form');
+    const followButton = document.getElementById('follow-button');
+    const followerCount = document.getElementById('follower-count'); // Select follower count element
+    
+    // Retrieve follow status from localStorage
+    const isFollowing = localStorage.getItem('isFollowing');
+    if (isFollowing) {
+        followButton.textContent = isFollowing === 'true' ? 'Unfollow' : 'Follow';
+    }
+    
+    followForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+        fetch(followForm.action, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            credentials: 'same-origin',
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Update button text
+            followButton.textContent = data.is_following ? 'Unfollow' : 'Follow';
+            // Store follow status in localStorage
+            localStorage.setItem('isFollowing', data.is_following);
+            
+            // Update follower count
+            if (data.num_followers !== undefined) {
+                followerCount.textContent = data.num_followers;
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    });
+});
+
+
+</script> -->
+
+{% endblock js %}

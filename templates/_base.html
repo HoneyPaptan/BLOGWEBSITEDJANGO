@@ -1,0 +1,152 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Micro</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'src/output.css' %}">
+
+
+</head>
+
+<body class="lg:mr-40 lg:ml-40 sm:mr-20 sm:ml-20">
+    <main>
+        <nav class="flex items-center justify-between mt-2">
+            <div>
+                <a href="/" class="text-2xl tracking-tighter font-rubik font-bold">Micro</a>
+            </div>
+            <div class="hidden sm:block">
+                <ul class="flex items-center justify-center gap-5">
+                    <li><a href="/about/" class="font-medium text-sm font-rubik">About</a></li>
+                    <li><a href="/leaderboard/" class="font-medium text-sm font-rubik">Leaderboard</a></li>
+                    <li><a href="/write/" class="font-medium text-sm font-rubik">Write</a></li>
+                    {% if user.is_authenticated %}
+                    <li>
+                        <a href="/profile/{{ request.user }}">
+                            {% if request.user.is_superuser %}
+                            <img class="w-10 h-10 rounded-full"
+                                src="https://static.vecteezy.com/system/resources/previews/008/442/086/non_2x/illustration-of-human-icon-user-symbol-icon-modern-design-on-blank-background-free-vector.jpg"
+                                alt="Default Profile Picture">
+                            {% elif request.user.socialaccount_set.exists %}
+                            {% with social_account=request.user.socialaccount_set.first %}
+                            <img class="w-10 h-10 rounded-full" src="{{ social_account.get_avatar_url }}"
+                                alt="Profile Picture">
+                            {% endwith %}
+                            {% else %}
+                            <img class="w-10 h-10 rounded-full"
+                                src="/media/blogmain/{{ request.user.profile.profile_picture }}"
+                                alt="Default Profile Picture">
+                            {% endif %}
+                        </a>
+                    </li>
+                    <li><a href="/account/logout/" class="font-medium text-sm font-rubik">Logout</a></li>
+                    {% else %}
+                    <li><a href="/account/register/"
+                            class="font-medium text-sm font-rubik bg-[#266bd9] text-white p-3 px-5 rounded-full">Signup</a>
+                    </li>
+                    <li><a href="/account/login/" class="font-medium text-sm font-rubik">Login</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+            <div class="sm:hidden">
+                <button id="menu-toggle" class="block text-gray-700 hover:text-gray-900 focus:text-gray-900 focus:outline-none">
+                    <svg class="h-6 w-6 fill-current" viewBox="0 0 24 24">
+                        <path fill-rule="evenodd"
+                            d="M4 6h16a1 1 0 0 1 0 2H4a1 1 0 0 1 0-2zm0 5h16a1 1 0 0 1 0 2H4a1 1 0 0 1 0-2zm0 5h16a1 1 0 0 1 0 2H4a1 1 0 0 1 0-2z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                </button>
+            </div>
+        </nav>
+        <div id="menu" class="hidden sm:hidden">
+            <ul class="flex flex-col items-center justify-center gap-5">
+                <li><a href="/about/" class="font-medium text-sm font-rubik">About</a></li>
+                <li><a href="/leaderboard/" class="font-medium text-sm font-rubik">Leaderboard</a></li>
+                <li><a href="/write/" class="font-medium text-sm font-rubik">Write</a></li>
+                {% if user.is_authenticated %}
+                <li>
+                    <a href="/profile/{{ request.user }}">
+                        {% if request.user.is_superuser %}
+                        <img class="w-10 h-10 rounded-full"
+                            src="https://static.vecteezy.com/system/resources/previews/008/442/086/non_2x/illustration-of-human-icon-user-symbol-icon-modern-design-on-blank-background-free-vector.jpg"
+                            alt="Default Profile Picture">
+                        {% elif request.user.socialaccount_set.exists %}
+                        {% with social_account=request.user.socialaccount_set.first %}
+                        <img class="w-10 h-10 rounded-full" src="{{ social_account.get_avatar_url }}"
+                            alt="Profile Picture">
+                        {% endwith %}
+                        {% else %}
+                        <img class="w-10 h-10 rounded-full"
+                            src="/media/blogmain/{{ request.user.profile.profile_picture }}"
+                            alt="Default Profile Picture">
+                        {% endif %}
+                    </a>
+                </li>
+                <li><a href="/account/logout/" class="font-medium text-sm font-rubik">Logout</a></li>
+                {% else %}
+                <li><a href="/account/register/"
+                        class="font-medium text-sm font-rubik bg-[#266bd9] text-white p-3 px-5 rounded-full">Signup</a></li>
+                <li><a href="/account/login/" class="font-medium text-sm font-rubik">Login</a></li>
+                {% endif %}
+            </ul>
+        </div>
+        
+        
+        {% if messages %}
+    <div class="fixed top-4 right-4 z-50">
+        <ul class="messages flex justify-center items-center gap-3 ">
+            {% for message in messages %}
+            <li class="message bg-black text-white px-6 py-4 rounded-lg shadow-lg mb-4 font-rubik font-semibold flex justify-center items-center gap-2" {% if message.tags %}class="{{ message.tags }}"{% endif %}>
+                {{ message }}
+                <svg class=" close-icon w-6 h-6 text-white dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 17.94 6M18 18 6.06 6"/>
+                  </svg>
+                  
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    </main>
+ 
+        {% block content %}
+        {% endblock content %}
+    
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                document.getElementById("menu-toggle").addEventListener("click", function () {
+                    document.getElementById("menu").classList.toggle("hidden");
+                });
+            });
+        </script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                var messages = document.querySelectorAll('.message');
+                messages.forEach(function(message) {
+                    var closeIcon = message.querySelector('.close-icon');
+                    closeIcon.addEventListener('click', function() {
+                        message.style.display = 'none';
+                    });
+                    var duration = 5000; // Change the duration (in milliseconds) as needed
+                    setTimeout(function() {
+                        message.style.display = 'none';
+                    }, duration);
+                });
+            });
+        </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
+    {% block js %}
+    {% endblock js %}
+</body>
+
+</html>
